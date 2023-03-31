@@ -74,4 +74,5 @@ class Argument :
                 return List_attacking_proposal[0]
             else:
                 return None
+    
 

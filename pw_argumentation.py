@@ -23,7 +23,9 @@ class ArgumentAgent(CommunicatingAgent) :
         self.preference = preference
         self.is_commited=is_commited
         self.commited_val=None
-
+    def argument_parsing ( self , argument ) :
+        """ Parse the argument to get the proposition and the argumentation graph."""
+        pass
     def step(self) :
         super().step()
         # TO DO: add the argumentation process
@@ -55,7 +57,7 @@ class ArgumentAgent(CommunicatingAgent) :
                         args=Argument(True,content)
                         prop=args.support_proposal(content,self.preference)
                         if prop!=None:
-                            message=Message(self.get_name(),sender,MessagePerformative.ARGUE,prop)
+                            message=Message(self.get_name(),sender,MessagePerformative.ARGUE,(content,prop))
                             self.send_message(message)
                             print(message)
                         else:
@@ -66,6 +68,8 @@ class ArgumentAgent(CommunicatingAgent) :
                             self.send_message(message)
                             print(message)
                     if performative==MessagePerformative.ARGUE:
+                        item_=content[0]
+                        criterion_name=content[1].get_criterion_name()
                         print('to be done')
 
                     if performative in [MessagePerformative.ACCEPT,MessagePerformative.COMMIT]:

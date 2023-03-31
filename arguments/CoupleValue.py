@@ -18,3 +18,7 @@ class CoupleValue :
         """ Returns couple value as a String .
         """
         return str(self.criterion_name) + " = " + str ( self.value )
+    def get_criterion_name ( self ):
+        """ Returns the criterion name .
+        """
+        return self.criterion_name
