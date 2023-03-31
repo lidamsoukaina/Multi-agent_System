@@ -12,4 +12,5 @@ class Comparison :
         """ Creates a new comparison .
         """
         # To be completed
-        pass
+        self.best_criterion_name = best_criterion_name
+        self.worst_criterion_name = worst_criterion_name
