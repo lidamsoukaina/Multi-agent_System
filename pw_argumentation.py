@@ -12,6 +12,9 @@ from communication.preferences.CriterionValue import CriterionValue
 from communication.preferences.Preferences import Preferences
 from communication.preferences.Item import Item
 
+from arguments.Argument import Argument
+
+
 class ArgumentAgent(CommunicatingAgent) :
     """ ArgumentAgent which inherit from CommunicatingAgent .
     """
@@ -28,6 +31,8 @@ class ArgumentAgent(CommunicatingAgent) :
             pass
         else:
             messages=self.get_new_messages()
+            performatives=[msg.get_performative() for msg in messages]
+            print('agent',self.get_name(),'messages',performatives)
             if len(messages)!=0:
             
                 for msg in messages:
@@ -46,19 +51,32 @@ class ArgumentAgent(CommunicatingAgent) :
                             message=Message(self.get_name(),sender,MessagePerformative.ASK_WHY,content)
                             self.send_message(message)
                             print(message)
-                    elif performative==MessagePerformative.ASK_WHY:
-                        pass
-                    elif performative in [MessagePerformative.ACCEPT,MessagePerformative.COMMIT]:
+                    if performative==MessagePerformative.ASK_WHY:
+                        args=Argument(True,content)
+                        prop=args.support_proposal(content,self.preference)
+                        if prop!=None:
+                            message=Message(self.get_name(),sender,MessagePerformative.ARGUE,prop)
+                            self.send_message(message)
+                            print(message)
+                        else:
+                            items_list=self.model.items.copy()
+                            items_list.remove(content)
+                            top_item = self.preference.most_preferred(items_list)
+                            message=Message(self.get_name(),sender,MessagePerformative.PROPOSE,top_item)
+                            self.send_message(message)
+                            print(message)
+                    if performative==MessagePerformative.ARGUE:
+                        print('to be done')
+
+                    if performative in [MessagePerformative.ACCEPT,MessagePerformative.COMMIT]:
                         message=Message(self.get_name(),sender,MessagePerformative.COMMIT,content)
                         self.commited_val=content
                         self.is_commited=True
                         self.send_message(message)
                         print(message)
-                  
-                
             else:
                 # get random agent
-                agent_list = self.model.schedule.agents
+                agent_list = self.model.schedule.agents.copy()
                 agent_list.remove(self)
                 agent=random.choice(agent_list)
                 # get the top item according to the preference
@@ -109,11 +127,13 @@ class ArgumentModel(Model) :
 if __name__ == "__main__":
     # init list of items
 
-    items=[Item("Diesel Engine", "A super cool diesel engine"), Item("Electric Engine", "A very quiet engine")]
+    items=[Item("Diesel Engine", "A super cool diesel engine"), Item("Electric Engine", "A very quiet engine"),
+           Item("Hybrid Engine", "A very efficient engine"),Item("Petrol Engine", "A very cheap engine"),
+           Item("Gas Engine", "A very powerful engine")]
     # init list of criteria
     criteria = [CriterionName.PRODUCTION_COST, CriterionName.ENVIRONMENT_IMPACT,
                                     CriterionName.CONSUMPTION, CriterionName.DURABILITY, CriterionName.NOISE]
-    argument_model = ArgumentModel(3,items,criteria)
+    argument_model = ArgumentModel(2,items,criteria)
     # get the first agent  
     agent = argument_model.schedule.agents[0]
     # get the preference of the first agent
@@ -129,4 +149,7 @@ if __name__ == "__main__":
         # for value in pref.get_criterion_value_list():
         #     print(value.get_item(), value.get_criterion_name(), value.get_value())
     for i in range(10):
+        print('__________________________________________________________________')
+        print("step ",i)
+        print('__________________________________________________________________')
         argument_model.step()

@@ -34,13 +34,12 @@ class Argument :
         Generate a list of premisses which can be used to support an item
         param item : Item - name of the item
         return : list of all premisses PRO an item ( sorted by order of importancebased on agent ’s preferences """
-        supporting_proposals=[]
         criteria_names=preferences.get_criterion_name_list()
         for criterion in criteria_names:
             value=preferences.get_value(item,criterion)
-            if value in [Value.VERY_GOOD,Value.GOOD]:
-                supporting_proposals.append(criterion)
-        return supporting_proposals
+            if value in [3,4]:
+                self.add_premiss_couple_values(criterion,value)
+        return self.couple_values_list
     
             # if preferences.get_value(item,criterion) > preferences.get_value(self.item,criterion):
             #     self.add_premiss_comparison(criterion,self.item)
@@ -48,10 +47,31 @@ class Argument :
             #     self.add_premiss_comparison(self.item,criterion)
 
     def List_attacking_proposal ( self , item , preferences ) :
-        opposing_proposals=[]
+
         criteria_names=preferences.get_criterion_name_list()
-        for criterion in criteria_names:
+        for criterion in criteria_names: #{order by default}
             value=preferences.get_value(item,criterion)
-            if value in [Value.BAD,Value.VERY_BAD]:
-                opposing_proposals.append(criterion)
-        return opposing_proposals
+            if value in [0,1]:
+                self.add_premiss_couple_values(criterion,value)
+        return self.couple_values_list
+
+    def support_proposal ( self , item,preferences ) :
+        """
+        Used when the agent receives " ASK_WHY " after having proposed an item
+        param item : str - name of the item which was proposed
+        return : string - the strongest supportive argument
+        """
+        # To be completed
+        if self.decision:
+            List_supporting_proposal=self.List_supporting_proposal(item , preferences )
+            if len(List_supporting_proposal)>0:
+                return List_supporting_proposal[0]
+            else:
+                return None
+        else:
+            List_attacking_proposal=self.List_attacking_proposal (item , preferences )
+            if len(List_attacking_proposal)>0:
+                return List_attacking_proposal[0]
+            else:
+                return None
+
