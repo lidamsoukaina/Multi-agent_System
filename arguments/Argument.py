@@ -74,5 +74,12 @@ class Argument :
                 return List_attacking_proposal[0]
             else:
                 return None
-    
-
+    def __str__(self) -> str:
+        if self.decision:
+            return self.item.__str__() + " <- " + self.couple_values_list[0].__str__()
+        else:
+            # TO DO: write response for attack
+            if len(self.comparison_list):
+                return '~ ' + self.item.__str__() + " <- " + self.couple_values_list[0].__str__() + " , " + self.comparison_list[0].__str__() 
+            else:
+                return '~ ' + self.item.__str__() + " <- " + self.couple_values_list[0].__str__()

@@ -86,7 +86,27 @@ class Preferences:
         item_list.sort(key=lambda x: x.get_score(self), reverse=True)
         top_10_percent = item_list[:int(len(item_list) * 0.1)]
         return item in top_10_percent
-
+    
+    def better_criterion(self, item, criterion):
+        """
+        Check if we have better criterion than the one given in parameter.
+        """
+        is_top = self.__criterion_name_list.index(criterion) == 0
+        local_criterion_value = self.get_value(item, criterion) 
+        same_criterion = True
+        if is_top:
+            # bad local value for most prefered criterion
+            if local_criterion_value in [0,1]:
+                return same_criterion, criterion, local_criterion_value
+        else:
+            index = self.__criterion_name_list.index(criterion) 
+            better_criteria = self.__criterion_name_list[:index]
+            for crit in better_criteria:
+                if self.get_value(item, crit) in [0,1]:
+                    # bad on better criterion
+                    return not same_criterion, crit, self.get_value(item, crit)
+        return None, None, None
+    
 if __name__ == '__main__':
     """Testing the Preferences class.
     """

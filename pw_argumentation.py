@@ -25,6 +25,7 @@ class ArgumentAgent(CommunicatingAgent) :
         self.commited_val=None
     def argument_parsing ( self , argument ) :
         """ Parse the argument to get the proposition and the argumentation graph."""
+        # TO DO: maybe because content is already received as an object
         pass
     def step(self) :
         super().step()
@@ -33,10 +34,9 @@ class ArgumentAgent(CommunicatingAgent) :
             pass
         else:
             messages=self.get_new_messages()
-            performatives=[msg.get_performative() for msg in messages]
-            print('agent',self.get_name(),'messages',performatives)
+            #performatives=[msg.get_performative() for msg in messages]
+            # print('agent',self.get_name(),'messages',performatives)
             if len(messages)!=0:
-            
                 for msg in messages:
                     sender=msg.get_exp()
                     performative=msg.get_performative()
@@ -45,7 +45,6 @@ class ArgumentAgent(CommunicatingAgent) :
                         # get top 10% items according to the preference
                         is_top_10_item = self.preference.is_item_among_top_10_percent(content,self.model.items)
                         if is_top_10_item:
-                            
                             message=Message(self.get_name(),sender,MessagePerformative.ACCEPT,content)
                             self.send_message(message)
                             print(message)
@@ -54,10 +53,10 @@ class ArgumentAgent(CommunicatingAgent) :
                             self.send_message(message)
                             print(message)
                     if performative==MessagePerformative.ASK_WHY:
-                        args=Argument(True,content)
-                        prop=args.support_proposal(content,self.preference)
+                        arg=Argument(True,content)
+                        prop=arg.support_proposal(content,self.preference)
                         if prop!=None:
-                            message=Message(self.get_name(),sender,MessagePerformative.ARGUE,(content,prop))
+                            message=Message(self.get_name(),sender,MessagePerformative.ARGUE, arg)
                             self.send_message(message)
                             print(message)
                         else:
@@ -68,9 +67,39 @@ class ArgumentAgent(CommunicatingAgent) :
                             self.send_message(message)
                             print(message)
                     if performative==MessagePerformative.ARGUE:
-                        item_=content[0]
-                        criterion_name=content[1].get_criterion_name()
-                        print('to be done')
+                        item = content.item
+                        # TO DO: more than one criterion
+                        couple_criterion = content.couple_values_list[0]
+                        is_proposing = content.decision
+                        if is_proposing:
+                            same_critrion, criterion_name, criterion_val = self.preference.better_criterion(item, couple_criterion.criterion_name)
+                            if same_critrion is None:
+                                # Accept prop
+                                message=Message(self.get_name(),sender,MessagePerformative.ACCEPT,item)
+                                self.send_message(message)
+                                print(message)
+                            else:
+                                if same_critrion:
+                                    # bad local value
+                                    arg = Argument(False,item)
+                                    arg.add_premiss_couple_values(criterion_name, criterion_val)
+                                    message=Message(self.get_name(),sender,MessagePerformative.ARGUE, arg)
+                                    self.send_message(message)
+                                    print(message)
+                                else:
+                                    # bad on better criterion
+                                    arg = Argument(False,item)
+                                    arg.add_premiss_comparison(criterion_name,couple_criterion.criterion_name)
+                                    arg.add_premiss_couple_values(criterion_name, criterion_val)
+                                    message=Message(self.get_name(),sender,MessagePerformative.ARGUE, arg)
+                                    self.send_message(message)   
+                                    print(message) 
+                        else:
+                            print("Response to negative ARG")
+                            # TO DO
+                            pass
+
+                    # TO DO: propose new item alter
 
                     if performative in [MessagePerformative.ACCEPT,MessagePerformative.COMMIT]:
                         message=Message(self.get_name(),sender,MessagePerformative.COMMIT,content)
@@ -155,5 +184,4 @@ if __name__ == "__main__":
     for i in range(10):
         print('__________________________________________________________________')
         print("step ",i)
-        print('__________________________________________________________________')
         argument_model.step()
